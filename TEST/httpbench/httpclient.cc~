@@ -1,0 +1,311 @@
+/*
+ * httpbench
+ * Copyright (C) 2005   Wim Mees <Wim.Mees@rma.ac.be>
+ *                      All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ */
+
+#include <stdlib.h>
+#include <string.h>      // for strcpy()
+#include <assert.h>      // for assert()
+#include <sys/time.h>    // for gettimeofday()
+#include <sys/types.h>   // for socket-related constants
+#include <sys/socket.h>  // for socket()
+#include <netinet/in.h>  // for inet_addr
+#include <arpa/inet.h>   // id.
+#include <netdb.h>       // for gethostbyname()
+#include <unistd.h>      // for close()
+#include <pthread.h>     // for pthread_...()
+
+#include <iostream>
+using namespace std;
+
+class c_http_client
+{
+  private:
+  char *acServer;
+  struct sockaddr_in sAddressServer;
+
+  public:
+
+  c_http_client(const char *cacServer, const unsigned int cuiDestPort=80)
+  {
+    // store the name of the website we're visiting
+    // (we need to store this name since we must include it in the HTTP request)
+    acServer = NULL;
+    if (cacServer)
+    {
+      acServer = new char[strlen(cacServer)+1];
+      strcpy(acServer, cacServer);
+    }
+
+    // create a structure with the address of the destination server
+    bzero(&sAddressServer, sizeof(sAddressServer));
+    sAddressServer.sin_family = AF_INET;
+    sAddressServer.sin_port   = htons(cuiDestPort);
+
+    struct in_addr sIpAddress;
+    int iResult = inet_aton(acServer, &sIpAddress);
+    if (iResult)
+    {
+      bcopy((void *) &sIpAddress.s_addr, (void *) &sAddressServer.sin_addr, sizeof(sIpAddress.s_addr));
+    }
+    else
+    {
+      struct hostent *psHostEnt = gethostbyname(acServer);
+      assert(psHostEnt);
+      memcpy((void *) &sAddressServer.sin_addr, (void *) psHostEnt->h_addr_list[0], sizeof(struct in_addr));
+    }
+  }
+
+  ~c_http_client(void)
+  {
+    // clean up
+    if (acServer)
+    {
+      delete [] acServer;
+      acServer = NULL;
+    }
+  }
+
+  int fetch(const char *pacPath, char *pcBuffer=NULL, unsigned long ulMaxLength=0)
+  {
+    // create a tcp socket
+    int iSocketId = socket(AF_INET, SOCK_STREAM, 0);
+    if (iSocketId<0)  
+      { cerr << "ERROR: socket()" << endl;
+        return 0;
+      }
+    assert(iSocketId>=0);
+
+    // connect the socket to the server
+    int iResult = connect(iSocketId, (struct sockaddr *) &sAddressServer, sizeof(sAddressServer));
+    assert(iResult==0);
+
+    // build the request
+    char acRequest[1024] ={0};
+    sprintf(acRequest, 
+    "GET %s HTTP/1.1\r\n"
+    "Host: %s\r\n"
+    "Accept: image/gif, image/x-xbitmap, image/jpeg, image/pjpeg, image/png, */*\r\n"
+    // "Authorization: Basic cHVibGljOg\r\n"
+    "\r\n"
+    , pacPath, acServer);
+
+    // send the request to the server
+    iResult = send(iSocketId, acRequest, strlen(acRequest)+1, 0);
+    assert(iResult>0);
+
+    // read the reply 
+    if ((pcBuffer) && (ulMaxLength>0))
+    {
+      int iNrOfBytesRead =0;
+      do 
+      {
+        iNrOfBytesRead = read(iSocketId, pcBuffer, ulMaxLength);
+        pcBuffer    += iNrOfBytesRead;
+        ulMaxLength -= iNrOfBytesRead;
+      } while (iNrOfBytesRead) ;
+    }
+    else
+    {
+      char acBuffer[1025] ={0};
+      int  iNrOfBytesRead =0;
+      do 
+      {
+        iNrOfBytesRead = read(iSocketId, acBuffer, 1024);
+      } while (iNrOfBytesRead) ;
+    }
+
+    // close the connection
+    iResult = shutdown(iSocketId, 2);
+    //    assert(iResult==0);
+    iResult = close(iSocketId);
+    assert(iResult==0);
+
+    // ready
+    return 1;
+  }
+};
+
+typedef struct
+{
+  double        dTime;
+  unsigned long ulSize;
+  double        dDuration;
+} s_request_params;
+
+c_http_client *poHttpClient = NULL;
+char acPath[1025] ={0};
+
+void *threadPerformRequest(void *pvArgument)
+{
+  // convert the void argument to a s_request_params structure pointer
+  s_request_params *psRequestParams = (s_request_params *) pvArgument; 
+ 
+  // build a URL with these parameters
+  char acPathWithParams[1024];
+  sprintf(acPathWithParams, "%s?size=%d&duration=%f", acPath, (int) psRequestParams->ulSize, (float) psRequestParams->dDuration);
+
+  // perform the request
+  poHttpClient->fetch(acPathWithParams);
+
+  // ready
+  return NULL;
+}
+
+int main(int argc, char **argv)
+{
+  // variables
+  char acRequestFile[1025] ={0};
+  char acServer[1025] ={0};
+  unsigned long ulRepeatCount = 1;
+
+  // parse the command-line options
+  int c;
+  extern char *optarg;
+  while	((c = getopt(argc, argv, "r:s:p:c:h")) != -1)
+  {
+    switch (c) 
+    {
+      case 'r':
+      {
+        strncpy(acRequestFile, optarg, 1024);
+      } break;
+      case 's':
+      {
+        strncpy(acServer, optarg, 1024);
+      } break;
+      case 'p':
+      {
+        strncpy(acPath, optarg, 1024);
+      } break;
+      case 'c':
+      {
+        ulRepeatCount = atol(optarg);
+      } break;
+      default:
+      { cout << "Usage: " << argv[0] << " [options]" << endl;
+        cout << "Options:" << endl;
+        cout << "  -s server           (required)" << endl;
+        cout << "  -p path             (required)" << endl;
+        cout << "  -r request-file     (required)" << endl;
+        cout << "  -c repeat-count     (default is 1)" << endl;
+        exit(0);
+      } break;
+    }
+  }
+
+  // read the matrix with request data
+  FILE *psFile = fopen(acRequestFile, "r");
+  assert(psFile);
+
+  unsigned long ulNumberOfRequests = 0;
+  while (! feof(psFile))
+  {
+    float fTime, fSize, fDuration;
+    int iResult = fscanf(psFile, "%f %f %f ", &fTime, &fSize, &fDuration);
+    if (iResult==3)
+    {
+      ulNumberOfRequests++;
+    }
+  }
+  assert(ulNumberOfRequests>0);
+  
+  s_request_params asRequestData[ulNumberOfRequests];
+  rewind(psFile);
+  ulNumberOfRequests = 0;
+  while (! feof(psFile))
+  {
+    float fTime, fSize, fDuration;
+    int iResult = fscanf(psFile, "%f %f %f ", &fTime, &fSize, &fDuration);
+    if (iResult==3)
+    {
+      asRequestData[ulNumberOfRequests].dTime     = fTime;
+      asRequestData[ulNumberOfRequests].ulSize    = (unsigned long) fSize;
+      asRequestData[ulNumberOfRequests].dDuration = fDuration;
+      ulNumberOfRequests++;
+    }
+  }
+  fclose(psFile);
+
+  // create an http client object
+  poHttpClient = new c_http_client(acServer);
+  assert(poHttpClient);
+
+  // set the attributes for the transmission thread
+  pthread_attr_t sThreadAttr;
+  int iResult = pthread_attr_init(&sThreadAttr);
+  assert(iResult==0);
+  iResult = pthread_attr_setschedpolicy(&sThreadAttr, SCHED_FIFO); 
+  assert(iResult==0);
+  sched_param sSchedParam;
+  sSchedParam.sched_priority = 50;
+  iResult = pthread_attr_setschedparam(&sThreadAttr, &sSchedParam);
+  //  assert(iResult==0);
+  iResult = pthread_attr_setdetachstate(&sThreadAttr, PTHREAD_CREATE_DETACHED);
+  assert(iResult==0);
+
+  // repeat the requests a number of times
+  for ( unsigned long j=0 ; j<ulRepeatCount ; j++ )
+  {
+    cout << "j=" << j << endl;
+
+    // get the current time at the start of this iteration
+    struct timeval sTimeAtStart ;  
+    iResult = gettimeofday(&sTimeAtStart, NULL);
+    assert(iResult==0);
+
+    // launch each request thread at the appropriate time
+    for ( unsigned long i=0 ; i<ulNumberOfRequests ; i++ )
+    {
+      // get the current time
+      struct timeval sTimeNow ;  
+      int iResult = gettimeofday(&sTimeNow, NULL);
+      assert(iResult==0);
+
+      // compute the time until the next deadline
+      double dTimeToSleep = (sTimeAtStart.tv_sec  - sTimeNow.tv_sec + asRequestData[i].dTime ) * 1e6 
+                          + (sTimeAtStart.tv_usec - sTimeNow.tv_usec);
+
+      // sleep until the next deadline
+      cout << "sleep for: " << dTimeToSleep << "us until t=" << asRequestData[i].dTime << endl;
+      if (dTimeToSleep>0)
+      {
+        usleep((unsigned int) dTimeToSleep);
+      }
+
+      // launch a thread that performs the request
+      pthread_t sThread;
+      iResult = pthread_create(&sThread, &sThreadAttr, threadPerformRequest, (void *) &asRequestData[i]);
+      if (iResult)
+      {
+        cerr << "WARNING: not enough resources to create new thread, request skipped" << endl;
+      }
+    }
+  }
+
+  // wait for all the threads to finish
+  cout << "waiting for all threads to finish, please wait..." << endl;
+  sleep(10);
+
+  // clean up
+  if (poHttpClient)
+  {
+    delete poHttpClient;
+    poHttpClient = NULL;
+  }
+}

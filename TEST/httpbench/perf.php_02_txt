@@ -1,0 +1,69 @@
+<?
+$time_start = array_sum(explode(' ', microtime()));
+
+$txt = "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n
+        <html>\n
+        <head> <title>httpperf</title> </head>\n
+        <body>\n";
+
+
+if(!isset($_GET['duration']) || !isset($_GET['size'])){
+  $txt  .= "<h3>perf.php</h3>\n
+            Written by W. Mees<br>\n
+            Modified by T. Debatty<br>\n
+            Usage: perf.php?duration=xxxx&size=yyyy<br>\n
+            Where: xxxx is the generation duration in seconds<br>\n
+            and yyyy is the size of the generated page in bytes (minimum: 250 bytes!)<br>";
+  echo $txt;
+  exit();
+}
+
+$duration = $_GET['duration'];
+$size = $_GET['size'];
+
+// we start caching
+ob_start();
+
+// On retire qqes caractères à cause de l'entête, etc
+$size -= 219;
+
+// on diminue le temps de génération
+$duration += .005;
+$duration -= $size / 1000 * 0.08;
+
+// Nbre de lignes à écrire
+$nbre_lines = floor($size / 20);
+
+// le reste
+$reste = $size - $nbre_lines * 20;
+
+// time to sleep before every line (in microseconds)
+$timeToSleep = $duration * 1e6 / $nbre_lines;
+
+// on va écrire des lignes de 20 caractères: 15 'a' + '<br>\n
+for ( $i=0 ; $i<$nbre_lines; $i++ ){ 
+  for ( $j=0 ; $j<15 ; $j++ ){
+    $txt .= 'a';                 // les 14 'a'
+  }
+  $txt .= "<br>\n";
+  usleep($timeToSleep);
+}
+
+// On écrit les caractères restants
+for($i=0; $i<$reste; $i++){
+  $txt .= 'a';
+}
+
+$time_end = array_sum(explode(' ', microtime()));
+$generation_time = $time_end - $time_start;
+$txt .= "<br>\n
+         Generation time: $generation_time seconds";
+$txt .= "</body>\n
+         </html>";
+
+echo $txt;
+
+// Display wat is in cache
+ob_end_flush();
+
+?>

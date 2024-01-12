@@ -1,0 +1,11 @@
+
+sizes  = [ 0 100 500 1000 1472 ];
+speeds = [ 10 20 50 90 100 ];
+
+for iSize = 1:length(sizes)
+    for iSpeed = 1:length(speeds)
+        process_perfmeas(['meas_' int2str(sizes(iSize)) '.' int2str(sizes(iSize)) '000000', '0 data, 10Mbps')
+process_perfmeas('meas_0.10000000', '0 data, 10Mbps')
+process_perfmeas('meas_0.10000000', '0 data, 10Mbps')
+process_perfmeas('meas_0.10000000', '0 data, 10Mbps')
+process_perfmeas('meas_0.10000000', '0 data, 10Mbps')

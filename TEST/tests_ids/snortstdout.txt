@@ -1,0 +1,13 @@
+
+
+===============================================================================
+
+,----[ FLOWCACHE STATS ]----------
+Memcap: 10485760 Overhead Bytes 16400 used(%0.162010)/blocks (16988/5) Overhead blocks: 1 Could Hold: (71331)
+IPV4 count: 4 frees: 0 low_time: 1118913466, high_time: 1118913466, diff: 0h:00:00s
+    finds: 30057 reversed: 12629(%42.016835) 
+    find_sucess: 30053 find_fail: 4 percent_success: (%99.986692) new_flows: 4
+ Protocol: 6 (%99.936787) finds: 30038  reversed: 12629(%42.043412) 
+  find_sucess: 30035 find_fail: 3 percent_success: (%99.990013) new_flows: 3
+ Protocol: 17 (%0.063213) finds: 19  reversed: 0(%0.000000) 
+  find_sucess: 18 find_fail: 1 percent_success: (%94.736842) new_flows: 1

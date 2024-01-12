@@ -1,0 +1,8 @@
+#!/bin/bash
+. test_settings.sh
+
+#sleep $sleepbeforekill
+sleep $*
+echo "    ___killing all snort processes if any___"
+killall snort
+

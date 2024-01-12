@@ -1,0 +1,13 @@
+folders to copy on both computers:
+	netbench
+	stressnet
+	dumps
+
+folders to copy on IDS:
+	tests_ids
+	matlab_tests
+
+folders to copy on generator:
+	tests_gen
+
+tcpdump capture files may be downloaded on the MIT Lincoln Laboratory web site. To find them, the easiest is to search for "IDS data sets MIT Lincoln Laboratory" or some similar string in google

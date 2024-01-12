@@ -1,0 +1,18 @@
+
+basic measurement stuff:
+- apply 2nd order correction to clock ?
+- remove outliers from clock correction computation
+- add clock callibration to udp measurement
+- use sum when computing locally averaged bandwidth ?
+
+higher level stuff:
+- for a switch:
+  - measure difference between mac address already in mac table and new mac address
+  - is lookup f(nr. of address in mac table) ?
+  - is there a broadcast limitation ?
+
+router:
+- difference ipv4 - ipv6
+- influence flow labels ?
+- influence size(routing table)
+

@@ -1,0 +1,17 @@
+#!/bin/bash
+#This is the script for the generator. Don't modify this. Change settings in test_settings.sh
+. test_settings.sh
+for ratio in $ratio
+do
+	for ((repeat=1;repeat<=20;repeat++))
+	do
+		for bitrate in $bitrates
+		do
+			sleep 3
+			echo "Bitrate: $bitrate kbit/s"
+			$stressnetdir/stressnet -i$interface -m$fileM -n$fileN -r$ratio -p$priority -q$quantity -b$bitrate
+			$netbenchdir/prec_raw_block -i eth0 > /dev/null
+			echo "Bitrate done: $bitrate kbit/s"
+		done
+	done
+done

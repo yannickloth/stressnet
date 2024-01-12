@@ -1,0 +1,79 @@
+<?
+$time_start = array_sum(explode(' ', microtime()));
+
+// we start caching
+ob_start();
+
+$txt = "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\">\n
+        <html>\n
+        <head> <title>httpperf</title> </head>\n
+        <body>\n";
+
+
+if(!isset($_GET['duration']) || !isset($_GET['size'])){
+  $txt  .= "<h3>perf.php</h3>\n
+            Version: 2.0<br>\n
+            Written by W. Mees<br>\n
+            Modified by T. Debatty<br>\n
+            Usage: perf.php?duration=xxxx&size=yyyy<br>\n
+            Where: xxxx is the generation duration in seconds<br>\n
+            and yyyy is the size of the generated page in bytes (minimum: 250 bytes!)<br>";
+  echo $txt;
+}else{
+  $duration = $_GET['duration'];
+  $size = $_GET['size'];
+
+  if($size < 250){
+    $txt .= "!! size must be at least 250 !!";
+  }else{
+    // On retire qqes caractères à cause de l'entête, etc
+    $size -= 233;
+
+    // Le moment souhaité de la fin:
+    $wished_end = $time_start + $duration * 1000000;
+
+    // On retire 2ms
+    $wished_end -= 2000;
+
+    // Nbre de lignes à écrire
+    $nbre_lines = floor($size / 20);
+
+    // le reste
+    $reste = $size - $nbre_lines * 20;
+
+    // on va écrire des lignes de 20 caractères: 15 'a' + '<br>\n
+    for ( $i=0 ; $i<$nbre_lines; $i++ ){ 
+      for ( $j=0 ; $j<15 ; $j++ ){
+	$txt .= 'a';                 // les 14 'a'
+      }
+      $txt .= "<br>\n";
+    }
+
+    // On écrit les caractères restants
+    for($i=0; $i<$reste; $i++){
+      $txt .= 'a';
+    }
+    
+    $time_end = array_sum(explode(' ', microtime()));
+
+    // Le temps qu'on doit encore attendre (en microsecondes)
+    $time_to_wait = $wished_end - $time_end;
+    usleep($time_to_wait);
+
+    // Le temps total du script:
+    $time_end = array_sum(explode(' ', microtime()));
+
+    $generation_time = $time_end - $time_start;
+    $txt .= "<br>\n
+             Generation time: $generation_time seconds";
+  }
+}
+
+$txt .= "</body>\n
+         </html>";
+
+// Display the text and empty the cache
+echo $txt;
+ob_end_flush();
+
+?>

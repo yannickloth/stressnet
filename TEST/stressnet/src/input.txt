@@ -1,0 +1,52 @@
+package "stressnet"
+version "0.1"
+purpose "stressnet is intended for replaying tcpdump/pcap capture files 
+-except the ethernet address- with a given bitrate to stress network 
+devices such as intrusion detection systems or firewalls.  It mixes two pcap
+files (A and B) with a ratio r given as argument and meaning: for every 1 
+packet of file B that is sent, there are r packets of file A that are sent. 
+This is meant to impose a rate of malformed packets in the dataflow.
+
+THIS SOFTWARE CAN AND SHOULD BE IMPROVED AS MUCH AS POSSIBLE, new ideas and 
+critics are always welcome.  You can send them by email to the following 
+address:
+
+\tyannick AT loth.be
+
+I would be pleased to discuss about them with you and to exchange ideas about
+further improvements.
+
+This software was initially developed for the Royal Military Academy (RMA) of
+Belgium (Brussels), by a student (Yannick Loth) during a training for his 
+studies as Industrial Engineer in Applied Informatics at the  University of 
+Luxembourg (2005).
+The aim of stressnet is to provide a reliable tool (i.e. intended for 
+engineers etc.) to send packets (well formed and malformed ones) through a 
+network at different speeds and ratios of innofensive packets over attacking 
+packets to establish the limits of devices when they are seen as 'blackboxes',
+i.e. when the internal functioning of the devices is unknown.
+'Reliable' means that when someone asks for a certain bitrate, it should send
+data at bitrates quite close to the wanted bitrate.
+
+The author of this software thanks Maj. W. Mees (RMA) and Capt. O. Thonnard 
+(RMA) as well as Pr. Th. Engel (Uni. Lux.) for their advices.
+
+stressnet should only be used by people knowing what they do, this tool could 
+in fact block your computer for a long time if you don't take care of what you
+do.
+
+You'll (one day, I hope...) find more about this program on 
+\thttp://www.loth.be/yannick/stressnet/index.html"
+
+
+option "interface" i "network device used to send packets" string default="eth0" no
+option "packetfileM" m "First file of packets" string yes
+option "packetfileN" n "Second file ofpackets" string no
+option "ratio" r "ratio M/N: number of packets of file M for every 1 packet of file N" long default="50" no
+option "bitrate" b "desired send bitrate in kbit/s" long default="100" no
+option "configfile" c "config file containing the command line arguments" string no
+option "priority" p "scheduling priority value" int default="0" no
+option "quantity" q "total quantity of packets to send" int default="100" no
+option "destMAC" d "destination MAC address for ALL packets" string default="00:11:22:33:44:55" no
+option "stats" s "simply output stats, no packet generation" no
+

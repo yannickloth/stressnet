@@ -1,0 +1,12 @@
+folders to copy on both computers:
+	netbench
+	stressnet
+	dumps
+
+folders to copy on IDS:
+	tests_ids
+	matlab_tests
+
+folders to copy on generator:
+	tests_gen
+

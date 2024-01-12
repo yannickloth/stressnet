@@ -1,0 +1,13 @@
+   ****** Beginning of mfile2sci() session ******
+   File to convert: /home/yannick/matlab_tests/script_pcre_999.m
+   Result file path: /home/yannick/matlab_tests/
+   Recursive mode: OFF
+   Only double values used in M-file: NO
+   Verbose mode: 1
+   Generate formated code: YES
+   M-file reading...
+   M-file reading: Done
+   Syntax modification...
+   Syntax modification: Done
+   Macro to tree conversion...
+   Conversion of M-tree...

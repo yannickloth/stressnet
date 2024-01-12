@@ -1,0 +1,153 @@
+/*
+ * httpbench
+ * Copyright (C) 2005   Wim Mees <Wim.Mees@rma.ac.be>
+ *                      All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ */
+
+#include <stdlib.h>  // for exit()
+#include <signal.h>  // for signal()
+#include <unistd.h>  // for getopt()
+#include <assert.h>  // for assert()
+
+extern "C" 
+{ 
+#include <pcap.h> 
+}
+
+#include <iostream>
+using namespace std;
+
+void terminateHandler(int iSignal)
+{
+  // ignore new signals of this type
+  signal(SIGINT,  SIG_IGN);      
+  signal(SIGTERM, SIG_IGN);      
+  signal(SIGALRM, SIG_IGN);      
+
+  // ready
+  return;
+}
+
+void ProcessPacket (u_char *pucUserData, const struct pcap_pkthdr *psPacketHeader, const u_char *pucData)
+{
+  // convert userdata pointer to a pointer to the c_prx object
+  // that launched this capture.
+//  c_prx *poPrx = (c_prx *) pucUserData;
+
+
+
+  sleep(1);  
+  // process this packet
+  // (note: we pass "->len" instead of "->caplen" since we only
+  //  copy the stamp and store the length of the full packet on
+  //  the wire; we don't care about the fact that we didn't
+  //  capture the complete length of the packet)
+//  poPrx->add(pucData, psPacketHeader->len, &(psPacketHeader->ts));
+}
+
+
+int main(int argc, char **argv)
+{
+  // some default values
+  char *pcDevice       = "eth0"; // default capture device is first Ethernet interface
+  char *pcFilterString = NULL;   // no default bpf filter
+  int  iSnapLength     =  1514;  // max Ethernet size (without FCS which is not captured anyway)
+  int  iPromiscuous    =  1;     // place interface in promiscuous mode
+  int  iTimeout        =  1000;  // (milliseconds)
+  int  uiAlarmTimeout = 0;
+
+  // parse the command-line options
+  int c;
+  extern char *optarg;
+  while	((c = getopt(argc, argv, "i:f:w:c:a:")) != -1)
+  {
+    switch (c) 
+    {
+      case 'i':
+      { pcDevice = optarg;
+      } break;
+      case 'f':
+      { pcFilterString = optarg;
+      } break;
+      case 'w':
+      { uiAlarmTimeout = atoi(optarg);
+      } break;
+      case '?':
+      { cerr << "ERROR: parameter \"" << optarg << "\" not implemented." << endl;
+        exit(0);
+      } break;
+    }
+  }
+
+  // install signal handlers
+ 
+  sighandler_t pResult;
+  pResult = signal(SIGINT, terminateHandler);
+  assert(pResult!=SIG_ERR);
+  pResult = signal(SIGTERM, terminateHandler);
+  assert(pResult!=SIG_ERR);
+  pResult = signal(SIGALRM, terminateHandler);
+  assert(pResult!=SIG_ERR);
+  
+  // set an alarm 
+  if (uiAlarmTimeout >0)
+  { alarm(uiAlarmTimeout);         
+  }
+
+  // start the capture
+  int  iResult;
+  char acErrorMessage [PCAP_ERRBUF_SIZE] ={0};
+
+  // select the device to sniff on
+  if (pcDevice == NULL)
+  {
+    // find a valid device to sniff on
+    pcDevice = pcap_lookupdev (acErrorMessage);
+    assert(pcDevice != NULL);
+  }
+
+  // get the network address and the network mask for this device
+  bpf_u_int32 uiNetworkAddress;  
+  bpf_u_int32 uiNetworkMask;  
+  iResult = pcap_lookupnet (pcDevice, &uiNetworkAddress, &uiNetworkMask, acErrorMessage);
+  assert(iResult>=0);
+
+  // open the device for sniffing
+  pcap_t *psDescriptor = pcap_open_live (pcDevice, iSnapLength, iPromiscuous, iTimeout, acErrorMessage);
+  assert(psDescriptor != NULL);
+
+  // define a capture filter
+  struct bpf_program sFilterProgram;
+  int                iFlagOptimize  =1;
+  iResult = pcap_compile (psDescriptor, &sFilterProgram, pcFilterString, iFlagOptimize, uiNetworkMask);
+  assert(iResult>=0);
+  iResult = pcap_setfilter (psDescriptor, &sFilterProgram);
+  assert(iResult>=0);
+
+  // start the capture
+  pcap_handler   printer      = ProcessPacket;
+  unsigned char *pucUserData  = (unsigned char *) NULL;
+  iResult = pcap_loop (psDescriptor, 0, printer, pucUserData);
+  assert(iResult>=0);
+
+  // the capture was stopped, now process the measurements
+  //  cPrx.process();
+
+  // the end
+  return 0;
+}
+

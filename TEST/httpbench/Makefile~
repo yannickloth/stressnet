@@ -1,0 +1,12 @@
+
+default: httpclient bwmeas
+
+httpclient: httpclient.cc
+	gcc -Wall -o httpclient httpclient.cc -lstdc++ -lpthread
+
+bwmeas: bwmeas.cc
+	gcc -Wall -o bwmeas bwmeas.cc -lstdc++
+
+clean:
+	rm -f httpclient httpclient.exe
+

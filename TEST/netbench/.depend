@@ -1,0 +1,22 @@
+c_addr.o: c_addr.cc c_addr.hh types.hh
+c_data.o: c_data.cc c_data.hh c_pdu.hh types.hh
+c_eth.o: c_eth.cc c_eth.hh c_pdu.hh types.hh c_macaddr.hh c_addr.hh
+c_ipaddr.o: c_ipaddr.cc c_ipaddr.hh c_addr.hh types.hh
+c_ip.o: c_ip.cc c_ip.hh c_pdu.hh types.hh c_ipaddr.hh c_addr.hh
+c_macaddr.o: c_macaddr.cc c_macaddr.hh c_addr.hh types.hh
+c_pdu.o: c_pdu.cc c_pdu.hh types.hh
+c_prx.o: c_prx.cc c_prx.hh s_stamp.hh types.hh
+c_prx_raw.o: c_prx_raw.cc c_prx_raw.hh c_prx.hh s_stamp.hh types.hh
+c_ptx.o: c_ptx.cc types.hh c_ptx.hh s_stamp.hh
+c_ptx_raw.o: c_ptx_raw.cc c_ptx_raw.hh c_ptx.hh types.hh s_stamp.hh
+c_ptx_udp.o: c_ptx_udp.cc c_ptx_udp.hh c_ptx.hh types.hh s_stamp.hh
+c_udp.o: c_udp.cc c_udp.hh c_pdu.hh types.hh c_ip.hh c_ipaddr.hh \
+  c_addr.hh
+pgen_raw.o: pgen_raw.cc c_data.hh c_pdu.hh types.hh c_eth.hh c_macaddr.hh \
+  c_addr.hh c_ip.hh c_ipaddr.hh c_udp.hh c_ptx_raw.hh c_ptx.hh s_stamp.hh
+pgen_udp.o: pgen_udp.cc c_data.hh c_pdu.hh types.hh c_ptx_udp.hh c_ptx.hh \
+  s_stamp.hh
+prec_raw_block.o: prec_raw_block.cc c_prx_raw.hh c_prx.hh s_stamp.hh \
+  types.hh
+prec_raw.o: prec_raw.cc c_prx_raw.hh c_prx.hh s_stamp.hh types.hh
+prec_udp.o: prec_udp.cc c_prx.hh s_stamp.hh types.hh

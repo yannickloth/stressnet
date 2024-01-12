@@ -1,0 +1,166 @@
+Running in IDS mode
+
+Initializing Network Interface eth0
+
+        --== Initializing Snort ==--
+Initializing Output Plugins!
+Decoding Ethernet on interface eth0
+Initializing Preprocessors!
+Initializing Plug-ins!
+Parsing Rules file /home/yannick/Documents/snort-2.3.0/src/../etc/snort.conf
+
++++++++++++++++++++++++++++++++++++++++++++++++++++
+Initializing rule chains...
+,-----------[Flow Config]----------------------
+| Stats Interval:  0
+| Hash Method:     2
+| Memcap:          10485760
+| Rows  :          4099
+| Overhead Bytes:  16400(%0.16)
+`----------------------------------------------
+No arguments to frag2 directive, setting defaults to:
+    Fragment timeout: 60 seconds
+    Fragment memory cap: 4194304 bytes
+    Fragment min_ttl:   0
+    Fragment ttl_limit: 5
+    Fragment Problems: 0
+    Self preservation threshold: 500
+    Self preservation period: 90
+    Suspend threshold: 1000
+    Suspend period: 30
+Stream4 config:
+    Stateful inspection: ACTIVE
+    Session statistics: INACTIVE
+    Session timeout: 30 seconds
+    Session memory cap: 8388608 bytes
+    State alerts: INACTIVE
+    Evasion alerts: INACTIVE
+    Scan alerts: INACTIVE
+    Log Flushed Streams: INACTIVE
+    MinTTL: 1
+    TTL Limit: 5
+    Async Link: 0
+    State Protection: 0
+    Self preservation threshold: 50
+    Self preservation period: 90
+    Suspend threshold: 200
+    Suspend period: 30
+    Enforce TCP State: INACTIVE
+    Midstream Drop Alerts: INACTIVE
+
+Stream4_reassemble config:
+    Server reassembly: INACTIVE
+    Client reassembly: ACTIVE
+    Reassembler alerts: ACTIVE
+    Zero out flushed packets: INACTIVE
+    flush_data_diff_size: 500
+    Ports: 21 23 25 53 80 110 111 143 513 1433 
+    Emergency Ports: 21 23 25 53 80 110 111 143 513 1433 
+HttpInspect Config:
+    GLOBAL CONFIG
+      Max Pipeline Requests:    0
+      Inspection Type:          STATELESS
+      Detect Proxy Usage:       NO
+      IIS Unicode Map Filename: /home/yannick/Documents/snort-2.3.0/src/../etc/unicode.map
+      IIS Unicode Map Codepage: 1252
+    DEFAULT SERVER CONFIG:
+      Ports: 80 8080 8180 
+      Flow Depth: 300
+      Max Chunk Length: 500000
+      Inspect Pipeline Requests: YES
+      URI Discovery Strict Mode: NO
+      Allow Proxy Usage: NO
+      Disable Alerting: NO
+      Oversize Dir Length: 500
+      Only inspect URI: NO
+      Ascii: YES alert: NO
+      Double Decoding: YES alert: YES
+      %U Encoding: YES alert: YES
+      Bare Byte: YES alert: YES
+      Base36: OFF
+      UTF 8: OFF
+      IIS Unicode: YES alert: YES
+      Multiple Slash: YES alert: NO
+      IIS Backslash: YES alert: NO
+      Directory Traversal: YES alert: NO
+      Web Root Traversal: YES alert: YES
+      Apache WhiteSpace: YES alert: NO
+      IIS Delimiter: YES alert: NO
+      IIS Unicode Map: GLOBAL IIS UNICODE MAP CONFIG
+      Non-RFC Compliant Characters: NONE
+rpc_decode arguments:
+    Ports to decode RPC on: 111 32771 
+    alert_fragments: INACTIVE
+    alert_large_fragments: ACTIVE
+    alert_incomplete: ACTIVE
+    alert_multiple_requests: ACTIVE
+telnet_decode arguments:
+    Ports to decode telnet on: 21 23 25 119 
+Portscan Detection Config:
+    Detect Protocols:  TCP UDP ICMP IP
+    Detect Scan Type:  portscan portsweep decoy_portscan distributed_portscan
+    Sensitivity Level: Low
+    Memcap (in bytes): 10000000
+    Number of Nodes:   36900
+
+2246 Snort rules read...
+2246 Option Chains linked into 180 Chain Headers
+0 Dynamic rules
++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Warning: flowbits key 'realplayer.playlist' is checked but not ever set.
+
++-----------------------[thresholding-config]----------------------------------
+| memory-cap : 1048576 bytes
++-----------------------[thresholding-global]----------------------------------
+| none
++-----------------------[thresholding-local]-----------------------------------
+| gen-id=1      sig-id=2923       type=Threshold tracking=dst count=10  seconds=60 
+| gen-id=1      sig-id=2494       type=Both      tracking=dst count=20  seconds=60 
+| gen-id=1      sig-id=2496       type=Both      tracking=dst count=20  seconds=60 
+| gen-id=1      sig-id=2523       type=Both      tracking=dst count=10  seconds=10 
+| gen-id=1      sig-id=2924       type=Threshold tracking=dst count=10  seconds=60 
+| gen-id=1      sig-id=2275       type=Threshold tracking=dst count=5   seconds=60 
+| gen-id=1      sig-id=2495       type=Both      tracking=dst count=20  seconds=60 
++-----------------------[suppression]------------------------------------------
+| none
++------------------------------------------------------------------------------
+Rule application order: ->activation->dynamic->alert->pass->log
+Log directory = /home/yannick/Documents/snort-2.3.0/src/../log
+
+        --== Initialization Complete ==--
+
+   ,,_     -*> Snort! <*-
+  o"  )~   Version 2.3.0 (Build 10)
+   ''''    By Martin Roesch & The Snort Team: http://www.snort.org/team.html
+           (C) Copyright 1998-2004 Sourcefire Inc., et al.
+
+Snort received 200000 packets
+    Analyzed: 29446(14.723%)
+    Dropped: 170554(85.277%)
+===============================================================================
+Breakdown by protocol:
+    TCP: 29427      (14.713%)          
+    UDP: 19         (0.009%)          
+   ICMP: 0          (0.000%)          
+    ARP: 0          (0.000%)
+  EAPOL: 0          (0.000%)
+   IPv6: 0          (0.000%)
+    IPX: 0          (0.000%)
+  OTHER: 0          (0.000%)
+DISCARD: 0          (0.000%)
+===============================================================================
+Action Stats:
+ALERTS: 19
+LOGGED: 19
+PASSED: 0
+===============================================================================
+TCP Stream Reassembly Stats:
+    TCP Packets Used: 29427      (14.713%)
+    Stream Trackers: 401       
+    Stream flushes: 611       
+    Segments used: 1247      
+    Stream4 Memory Faults: 0         
+===============================================================================
+Final Flow Statistics
+Snort exiting
